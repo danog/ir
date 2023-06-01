@@ -46,6 +46,8 @@ extern "C" {
 # endif
 #elif defined(IR_TARGET_AARCH64)
 # define IR_TARGET "aarch64"
+#elif defined(IR_TARGET_RISCV64)
+# define IR_TARGET "riscv64"
 #else
 # error "Unknown IR target"
 #endif

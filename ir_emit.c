@@ -11,6 +11,8 @@
 # include "ir_x86.h"
 #elif defined(IR_TARGET_AARCH64)
 # include "ir_aarch64.h"
+#elif defined(IR_TARGET_RISCV64)
+# include "ir_riscv.h"
 #else
 # error "Unknown IR target"
 #endif
@@ -326,6 +328,9 @@ static void *ir_jmp_addr(ir_ctx *ctx, ir_insn *insn, ir_insn *addr_insn)
 #elif defined(IR_TARGET_AARCH64)
 # include "dynasm/dasm_proto.h"
 # include "dynasm/dasm_arm64.h"
+#elif defined(IR_TARGET_RISCV64)
+# include "dynasm/dasm_proto.h"
+# include "dynasm/dasm_riscv64.h"
 #else
 # error "Unknown IR target"
 #endif
@@ -343,6 +348,8 @@ static void ir_emit_dessa_moves(ir_ctx *ctx, int b, ir_block *bb);
 # include "ir_emit_x86.h"
 #elif defined(IR_TARGET_AARCH64)
 # include "ir_emit_aarch64.h"
+#elif defined(IR_TARGET_RISCV64)
+# include "ir_emit_riscv64.h"
 #else
 # error "Unknown IR target"
 #endif

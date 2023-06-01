@@ -154,6 +154,8 @@ static const ir_elf_header ir_elfhdr_template = {
 	.machine     = 62,
 #elif defined(IR_TARGET_AARCH64)
 	.machine     = 183,
+#elif defined(IR_TARGET_RISCV64)
+	.machine     = 243,
 #else
 # error "Unsupported target architecture"
 #endif

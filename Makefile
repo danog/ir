@@ -1,5 +1,5 @@
-# TRAGET may be "x86_64" or "x86" or "aarch64"
-TARGET     = x86_64
+# TRAGET may be "x86_64" or "x86" or "aarch64" or "riscv64"
+TARGET     = riscv64
 # BUILD can be "debug" or "release"
 BUILD      = debug
 BUILD_DIR  = .
@@ -37,6 +37,13 @@ ifeq (aarch64, $(TARGET))
   CC= aarch64-linux-gnu-gcc --sysroot=$(HOME)/php/ARM64
   CFLAGS += -DIR_TARGET_AARCH64
   DASM_ARCH  = aarch64
+  DASM_FLAGS =
+endif
+
+ifeq (riscv64, $(TARGET))
+  CC= riscv64-linux-gnu-gcc --sysroot=$(HOME)/php/RISCV64
+  CFLAGS += -DIR_TARGET_RISCV64
+  DASM_ARCH  = riscv64
   DASM_FLAGS =
 endif
 
