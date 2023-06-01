@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 -- DynASM x86/x64 module.
 --
--- Copyright (C) 2005-2021 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2022 Mike Pall. All rights reserved.
 -- See dynasm.lua for full copyright notice.
 ------------------------------------------------------------------------------
 
@@ -1147,8 +1147,6 @@ local map_op = {
   rep_0 =	"F3",
   repe_0 =	"F3",
   repz_0 =	"F3",
-  endbr32_0 =	"F30F1EFB",
-  endbr64_0 =	"F30F1EFA",
   -- F4: *hlt
   cmc_0 =	"F5",
   -- F6: test... mb,i; div... mb

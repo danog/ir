@@ -1,6 +1,6 @@
 /*
 ** DynASM ARM64 encoding engine.
-** Copyright (C) 2005-2021 Mike Pall. All rights reserved.
+** Copyright (C) 2005-2022 Mike Pall. All rights reserved.
 ** Released under the MIT license. See dynasm.lua for full copyright notice.
 */
 
@@ -158,10 +158,10 @@ void dasm_setup(Dst_DECL, const void *actionlist)
 #ifdef DASM_CHECKS
 #define CK(x, st) \
   do { if (!(x)) { \
-    D->status = DASM_S_##st|(p-D->actionlist-1); return; } } while (0)
+    D->status = DASM_S_##st|(int)(p-D->actionlist-1); return; } } while (0)
 #define CKPL(kind, st) \
   do { if ((size_t)((char *)pl-(char *)D->kind##labels) >= D->kind##size) { \
-    D->status = DASM_S_RANGE_##st|(p-D->actionlist-1); return; } } while (0)
+    D->status = DASM_S_RANGE_##st|(int)(p-D->actionlist-1); return; } } while (0)
 #else
 #define CK(x, st)	((void)0)
 #define CKPL(kind, st)	((void)0)
@@ -190,7 +190,9 @@ static int dasm_imm13(int lo, int hi)
   unsigned long long n = (((unsigned long long)hi) << 32) | (unsigned int)lo;
   unsigned long long m = 1ULL, a, b, c;
   if (n & 1) { n = ~n; inv = 1; }
-  a = n & -n; b = (n+a)&-(n+a); c = (n+a-b)&-(n+a-b);
+  a = n & (unsigned long long)-(long long)n;
+  b = (n+a)&(unsigned long long)-(long long)(n+a);
+  c = (n+a-b)&(unsigned long long)-(long long)(n+a-b);
   xa = dasm_ffs(a); xb = dasm_ffs(b);
   if (c) {
     w = dasm_ffs(c) - xa;
@@ -404,18 +406,9 @@ int dasm_link(Dst_DECL, size_t *szp)
   return DASM_S_OK;
 }
 
-#ifdef DASM_ADD_VENEER
-#define CK_REL(x, o) \
-  do { if (!(x) && !(n = DASM_ADD_VENEER(D, buffer, ins, b, cp, o))) \
-    return DASM_S_RANGE_REL|(p-D->actionlist-1); \
-  } while (0)
-#else
-#define CK_REL(x, o) CK(x, RANGE_REL)
-#endif
-
 #ifdef DASM_CHECKS
 #define CK(x, st) \
-  do { if (!(x)) return DASM_S_##st|(p-D->actionlist-1); } while (0)
+  do { if (!(x)) return DASM_S_##st|(int)(p-D->actionlist-1); } while (0)
 #else
 #define CK(x, st)	((void)0)
 #endif
@@ -453,7 +446,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 	  if (n < 0) {
 	    ptrdiff_t na = (ptrdiff_t)D->globals[-n] - (ptrdiff_t)cp + 4;
 	    n = (int)na;
-	    CK_REL((ptrdiff_t)n == na, na);
+	    CK((ptrdiff_t)n == na, RANGE_REL);
 	    goto patchrel;
 	  }
 	  /* fallthrough */
@@ -462,18 +455,18 @@ int dasm_encode(Dst_DECL, void *buffer)
 	  n = *DASM_POS2PTR(D, n) - (int)((char *)cp - base) + 4;
 	patchrel:
 	  if (!(ins & 0xf800)) {  /* B, BL */
-	    CK_REL((n & 3) == 0 && ((n+0x08000000) >> 28) == 0, n);
+	    CK((n & 3) == 0 && ((n+0x08000000) >> 28) == 0, RANGE_REL);
 	    cp[-1] |= ((n >> 2) & 0x03ffffff);
 	  } else if ((ins & 0x800)) {  /* B.cond, CBZ, CBNZ, LDR* literal */
-	    CK_REL((n & 3) == 0 && ((n+0x00100000) >> 21) == 0, n);
+	    CK((n & 3) == 0 && ((n+0x00100000) >> 21) == 0, RANGE_REL);
 	    cp[-1] |= ((n << 3) & 0x00ffffe0);
 	  } else if ((ins & 0x3000) == 0x2000) {  /* ADR */
-	    CK_REL(((n+0x00100000) >> 21) == 0, n);
+	    CK(((n+0x00100000) >> 21) == 0, RANGE_REL);
 	    cp[-1] |= ((n << 3) & 0x00ffffe0) | ((n & 3) << 29);
 	  } else if ((ins & 0x3000) == 0x3000) {  /* ADRP */
 	    cp[-1] |= ((n >> 9) & 0x00ffffe0) | (((n >> 12) & 3) << 29);
 	  } else if ((ins & 0x1000)) {  /* TBZ, TBNZ */
-	    CK_REL((n & 3) == 0 && ((n+0x00008000) >> 16) == 0, n);
+	    CK((n & 3) == 0 && ((n+0x00008000) >> 16) == 0, RANGE_REL);
 	    cp[-1] |= ((n << 3) & 0x0007ffe0);
 	  } else if ((ins & 0x8000)) {  /* absolute */
 	    cp[0] = (unsigned int)((ptrdiff_t)cp - 4 + n);
@@ -490,7 +483,7 @@ int dasm_encode(Dst_DECL, void *buffer)
 	    na = na - (ptrdiff_t)cp + 4;
 	  }
 	  n = (int)na;
-	  CK_REL((ptrdiff_t)n == na, na);
+	  CK((ptrdiff_t)n == na, RANGE_REL);
 	  goto patchrel;
 	}
 	case DASM_LABEL_LG:
@@ -563,7 +556,7 @@ int dasm_checkstep(Dst_DECL, int secmatch)
   }
   if (D->status == DASM_S_OK && secmatch >= 0 &&
       D->section != &D->sections[secmatch])
-    D->status = DASM_S_MATCH_SEC|(D->section-D->sections);
+    D->status = DASM_S_MATCH_SEC|(int)(D->section-D->sections);
   return D->status;
 }
 #endif
