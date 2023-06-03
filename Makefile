@@ -41,7 +41,7 @@ ifeq (aarch64, $(TARGET))
 endif
 
 ifeq (riscv64, $(TARGET))
-  CC= riscv64-linux-gnu-gcc --sysroot=$(HOME)/php/RISCV64
+  CC= riscv64-linux-gnu-gcc
   CFLAGS += -DIR_TARGET_RISCV64
   DASM_ARCH  = riscv64
   DASM_FLAGS =
