@@ -110,8 +110,8 @@ enum _ir_reg {
 #define IR_REGSET_FIXED \
 	( IR_REGSET(IR_REG_ZR) \
 	| IR_REGSET(IR_REG_LR) \
-	| IR_REGSET(IR_REG_X3) /* platform specific register */ \
 	| IR_REGSET(IR_REG_STACK_POINTER) \
+	| IR_REGSET(IR_REG_X3) /* platform specific register */ \
 	| IR_REGSET(IR_REG_FRAME_POINTER))
 #define IR_REGSET_GP \
 	IR_REGSET_DIFFERENCE(IR_REGSET_INTERVAL(IR_REG_GP_FIRST, IR_REG_GP_LAST), IR_REGSET_FIXED)
