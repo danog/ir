@@ -610,6 +610,11 @@ local function parse_gpr(expr)
     r = tonumber(r)
     if r <= 31 then return r, tp end
   end
+  local vreg = match(expr, "^Rx(%b())$")
+  if vreg then
+    waction("VREG", vreg)
+    return 0
+  end
   werror("bad register name `"..expr.."'")
 end
 

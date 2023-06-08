@@ -21,7 +21,7 @@ enum {
   /* The following actions need a buffer position. */
   DASM_ALIGN, DASM_REL_LG, DASM_LABEL_LG,
   /* The following actions also have an argument. */
-  DASM_REL_PC, DASM_LABEL_PC, DASM_IMM, DASM_IMMS,
+  DASM_REL_PC, DASM_LABEL_PC, DASM_IMM, DASM_IMMS, DASM_VREG,
   DASM__MAX
 };
 
@@ -38,6 +38,7 @@ enum {
 #define DASM_S_RANGE_LG		0x13000000
 #define DASM_S_RANGE_PC		0x14000000
 #define DASM_S_RANGE_REL	0x15000000
+#define DASM_S_RANGE_VREG	0x16000000
 #define DASM_S_UNDEF_LG		0x21000000
 #define DASM_S_UNDEF_PC		0x22000000
 
@@ -255,6 +256,10 @@ void dasm_put(Dst_DECL, int start, ...)
 #endif
 	      b[pos++] = n;
 	      break;
+      case DASM_VREG:
+        CK(n < 32, RANGE_VREG);
+        b[pos++] = n;
+        break;
       }
     }
   }
@@ -311,7 +316,7 @@ int dasm_link(Dst_DECL, size_t *szp)
 	  case DASM_ALIGN: ofs -= (b[pos++] + ofs) & (ins & 255); break;
 	  case DASM_REL_LG: case DASM_REL_PC: pos++; break;
 	  case DASM_LABEL_LG: case DASM_LABEL_PC: b[pos++] += ofs; break;
-	  case DASM_IMM: case DASM_IMMS: pos++; break;
+	  case DASM_IMM: case DASM_IMMS: case DASM_VREG: pos++; break;
 	  }
       }
       stop: (void)0;
@@ -391,6 +396,9 @@ int dasm_encode(Dst_DECL, void *buffer)
 	  break;
 	case DASM_IMMS:
 	  cp[-1] |= (((n << 20) & 0xfe000000) | ((n << 7) & 0x00000f80));
+	  break;
+	case DASM_VREG:
+	  cp[-1] |= (n & 0x1f) << (ins & 0x1f);
 	  break;
 	default: *cp++ = ins; break;
 	}
