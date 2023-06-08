@@ -79,6 +79,7 @@ local action_names = {
   "STOP", "SECTION", "ESC", "REL_EXT",
   "ALIGN", "REL_LG", "LABEL_LG",
   "REL_PC", "LABEL_PC", "IMM", "IMMS",
+  "VREG"
 }
 
 -- Maximum number of section buffer positions for dasm_put().
@@ -612,7 +613,7 @@ local function parse_gpr(expr)
   end
   local vreg = match(expr, "^Rx(%b())$")
   if vreg then
-    waction("VREG", vreg)
+    waction("VREG", 0, vreg)
     return 0
   end
   werror("bad register name `"..expr.."'")
