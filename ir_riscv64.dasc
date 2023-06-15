@@ -845,7 +845,7 @@ static void ir_emit_load_mem_int(ir_ctx *ctx, ir_type type, ir_reg reg, ir_reg b
 	if (riscv64_may_encode_i_type_addr_offset(offset, ir_type_size[type])) {
 		switch (ir_type_size[type]) {
 			case 8:
-				|	ld Rx(reg), offset(Rx(base_reg))
+				|	ld Rx(reg), ((uint64_t)(offset))(Rx(base_reg))
 				break;
 			case 4:
 				if (IR_IS_TYPE_SIGNED(type)) {
